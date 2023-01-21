@@ -50,5 +50,5 @@ func (s *Server) Stop(ctx context.Context) error {
 }
 
 func (s *Server) configureMux() {
-	s.mux.Handle("/hello", loggerMiddleware(handleHello(), s.logger))
+	s.mux.Handle("/hello", loggerMiddleware(handleHello(s.logger), s.logger))
 }
