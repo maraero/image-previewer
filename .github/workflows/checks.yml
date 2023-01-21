@@ -1,9 +1,9 @@
-name: Linter and tests
+name: Checks
 
 on:
   push:
     branches:
-      - master
+      - main
 
 env:
   GO111MODULE: "on"
