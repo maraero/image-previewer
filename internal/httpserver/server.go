@@ -6,18 +6,22 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/maraero/image-previewer/internal/logger"
 )
 
 type Server struct {
-	addr string
-	mux  *http.ServeMux
-	srv  *http.Server
+	addr   string
+	logger logger.Logger
+	mux    *http.ServeMux
+	srv    *http.Server
 }
 
-func New() *Server {
+func New(l logger.Logger) *Server {
 	s := &Server{
-		addr: Addr,
-		mux:  http.NewServeMux(),
+		addr:   Addr,
+		logger: l,
+		mux:    http.NewServeMux(),
 	}
 	s.configureMux()
 	return s
@@ -46,5 +50,5 @@ func (s *Server) Stop(ctx context.Context) error {
 }
 
 func (s *Server) configureMux() {
-	s.mux.Handle("/hello", handleHello())
+	s.mux.Handle("/hello", loggerMiddleware(handleHello(), s.logger))
 }

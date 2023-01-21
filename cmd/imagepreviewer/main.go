@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os/signal"
 	"sync"
@@ -11,13 +12,19 @@ import (
 	"time"
 
 	"github.com/maraero/image-previewer/internal/httpserver"
+	"github.com/maraero/image-previewer/internal/logger"
 )
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
-	httpServer := httpserver.New()
+	lggr, err := logger.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	httpServer := httpserver.New(lggr)
 	go func() {
 		err := httpServer.Start()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
