@@ -14,9 +14,9 @@ type Server struct {
 	srv  *http.Server
 }
 
-func New(addr string) *Server {
+func New() *Server {
 	s := &Server{
-		addr: addr,
+		addr: Addr,
 		mux:  http.NewServeMux(),
 	}
 	s.configureMux()

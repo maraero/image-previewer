@@ -17,7 +17,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
-	httpServer := httpserver.New("localhost:3000") // TODO: Move to config
+	httpServer := httpserver.New()
 	go func() {
 		err := httpServer.Start()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
