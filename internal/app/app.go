@@ -1,11 +1,11 @@
 package app
 
-import "github.com/maraero/image-previewer/internal/resizesrv"
+import "github.com/maraero/image-previewer/internal/imagesrv"
 
 type App struct {
-	ResizeSrv *resizesrv.ResizeSrv
+	ImageSrv *imagesrv.ImageSrv
 }
 
-func New(resizeSrv *resizesrv.ResizeSrv) *App {
-	return &App{resizeSrv}
+func New(imageSrv *imagesrv.ImageSrv) *App {
+	return &App{imageSrv}
 }

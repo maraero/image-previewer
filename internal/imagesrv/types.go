@@ -1,6 +1,6 @@
-package resizesrv
+package imagesrv
 
-type ResizeSrv struct{}
+type ImageSrv struct{}
 
 type ImageParams struct {
 	Width  int

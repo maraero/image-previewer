@@ -12,8 +12,8 @@ import (
 
 	"github.com/maraero/image-previewer/internal/app"
 	"github.com/maraero/image-previewer/internal/httpserver"
+	"github.com/maraero/image-previewer/internal/imagesrv"
 	"github.com/maraero/image-previewer/internal/logger"
-	"github.com/maraero/image-previewer/internal/resizesrv"
 )
 
 func main() {
@@ -25,8 +25,8 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
-	resizeSrv := resizesrv.New()
-	imagepreviewer := app.New(resizeSrv)
+	imageSrv := imagesrv.New()
+	imagepreviewer := app.New(imageSrv)
 
 	httpServer := httpserver.New(imagepreviewer, lggr)
 	go func() {

@@ -1,4 +1,4 @@
-package resizesrv
+package imagesrv
 
 import (
 	"fmt"

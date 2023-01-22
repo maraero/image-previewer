@@ -1,4 +1,4 @@
-package resizesrv
+package imagesrv
 
 import (
 	"fmt"
@@ -7,11 +7,11 @@ import (
 	"strings"
 )
 
-func New() *ResizeSrv {
-	return &ResizeSrv{}
+func New() *ImageSrv {
+	return &ImageSrv{}
 }
 
-func (rs *ResizeSrv) ExtractParams(path string) (*ImageParams, error) {
+func (rs *ImageSrv) ExtractParams(path string) (*ImageParams, error) {
 	p := strings.Split(path, "/")
 	if len(p) < 3 {
 		return nil, ErrTooFewParams
@@ -23,7 +23,7 @@ func (rs *ResizeSrv) ExtractParams(path string) (*ImageParams, error) {
 	return validateParams(width, height, url)
 }
 
-func (rs *ResizeSrv) DownloadImage(url string) ([]byte, error) {
+func (rs *ImageSrv) DownloadImage(url string) ([]byte, error) {
 	resp, err := http.Get(url) //nolint:gosec
 	if err != nil {
 		return nil, err
