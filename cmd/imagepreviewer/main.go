@@ -10,8 +10,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/maraero/image-previewer/internal/app"
 	"github.com/maraero/image-previewer/internal/httpserver"
 	"github.com/maraero/image-previewer/internal/logger"
+	"github.com/maraero/image-previewer/internal/resizesrv"
 )
 
 func main() {
@@ -23,7 +25,10 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
-	httpServer := httpserver.New(lggr)
+	resizeSrv := resizesrv.New()
+	imagepreviewer := app.New(resizeSrv)
+
+	httpServer := httpserver.New(imagepreviewer, lggr)
 	go func() {
 		err := httpServer.Start()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {

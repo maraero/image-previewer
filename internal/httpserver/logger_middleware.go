@@ -13,9 +13,8 @@ func loggerMiddleware(next http.Handler, l logger.Logger) http.Handler {
 
 		uri := r.URL.String()
 		method := r.Method
-		code := r.Response.StatusCode
 
-		l.Info(fmt.Sprintf("%s %s %d %s", uri, method, code, userAgent(r)))
+		l.Info(fmt.Sprintf("%s %s %s", uri, method, userAgent(r)))
 	})
 }
 
