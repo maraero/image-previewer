@@ -21,10 +21,16 @@ func handleFill(app *app.App, l logger.Logger) http.HandlerFunc {
 			return
 		}
 
-		l.Info(ip.Width, ip.Height, ip.URL)
-		w.WriteHeader(http.StatusOK)
-		_, err = w.Write([]byte("Success"))
+		image, err := app.ResizeSrv.DownloadImage(ip.URL)
 		if err != nil {
+			w.WriteHeader(http.StatusBadGateway)
+			if _, err := w.Write([]byte(err.Error())); err != nil {
+				l.Error("http write error: %w", err)
+			}
+		}
+
+		w.WriteHeader(http.StatusOK)
+		if _, err = w.Write(image); err != nil {
 			l.Error("http write error: %w", err)
 		}
 	}

@@ -3,6 +3,7 @@ package resizesrv
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 func validateParams(width, height, url string) (*ImageParams, error) {
@@ -14,7 +15,7 @@ func validateParams(width, height, url string) (*ImageParams, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ImageParams{Width: w, Height: h, URL: url}, nil
+	return &ImageParams{Width: w, Height: h, URL: addSchemaToURLIfRequired(url)}, nil
 }
 
 func validateSize(size string, t string) (int, error) {
@@ -26,4 +27,11 @@ func validateSize(size string, t string) (int, error) {
 		return 0, fmt.Errorf("%s must be greater than zero", t)
 	}
 	return w, nil
+}
+
+func addSchemaToURLIfRequired(url string) string {
+	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+		return url
+	}
+	return "http://" + url
 }
