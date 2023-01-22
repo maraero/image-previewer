@@ -1,17 +1,21 @@
 package imagesrv
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 )
 
-func New() *ImageSrv {
-	return &ImageSrv{}
+func New(cancelContext context.Context) *ImageSrv {
+	return &ImageSrv{
+		cancelContext: cancelContext,
+		httpClient:    http.DefaultClient,
+	}
 }
 
-func (rs *ImageSrv) ExtractParams(path string) (*ImageParams, error) {
+func (is *ImageSrv) ExtractParams(path string) (*ImageParams, error) {
 	p := strings.Split(path, "/")
 	if len(p) < 3 {
 		return nil, ErrTooFewParams
@@ -23,8 +27,12 @@ func (rs *ImageSrv) ExtractParams(path string) (*ImageParams, error) {
 	return validateParams(width, height, url)
 }
 
-func (rs *ImageSrv) DownloadImage(url string) ([]byte, error) {
-	resp, err := http.Get(url) //nolint:gosec
+func (is *ImageSrv) DownloadImage(url string) ([]byte, error) {
+	req, err := http.NewRequestWithContext(is.cancelContext, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("can not make request")
+	}
+	resp, err := is.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

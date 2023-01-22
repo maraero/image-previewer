@@ -25,7 +25,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
-	imageSrv := imagesrv.New()
+	imageSrv := imagesrv.New(ctx)
 	imagepreviewer := app.New(imageSrv)
 
 	httpServer := httpserver.New(imagepreviewer, lggr)

@@ -1,13 +1,14 @@
 package imagesrv
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestExtractParams(t *testing.T) {
-	rs := New()
+	rs := New(context.Background())
 
 	t.Run("too few params", func(t *testing.T) {
 		tests := []string{"", "200", "200/300"}
