@@ -30,8 +30,13 @@ func handleFill(app *app.App, l logger.Logger) http.HandlerFunc {
 			return
 		}
 
+		imageBytes, err := app.ImageSrv.EncodeImageToBytes(image)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
 		w.WriteHeader(http.StatusOK)
-		if _, err = w.Write(image); err != nil {
+		if _, err = w.Write(imageBytes); err != nil {
 			l.Error("http write error: %w", err)
 		}
 	}

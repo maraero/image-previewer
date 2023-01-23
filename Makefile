@@ -7,7 +7,7 @@ build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/imagepreviewer
 
 run: build
-	$(BIN)
+	$(BIN) -config ./configs/config.json
 
 version: build
 	$(BIN) version
