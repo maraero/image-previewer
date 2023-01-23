@@ -27,6 +27,7 @@ func handleFill(app *app.App, l logger.Logger) http.HandlerFunc {
 			if _, err := w.Write([]byte(err.Error())); err != nil {
 				l.Error("http write error: %w", err)
 			}
+			return
 		}
 
 		w.WriteHeader(http.StatusOK)
