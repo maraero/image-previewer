@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"log"
 	"net/http"
 	"os/signal"
@@ -11,13 +12,27 @@ import (
 	"time"
 
 	"github.com/maraero/image-previewer/internal/app"
+	"github.com/maraero/image-previewer/internal/config"
 	"github.com/maraero/image-previewer/internal/httpserver"
 	"github.com/maraero/image-previewer/internal/imagesrv"
 	"github.com/maraero/image-previewer/internal/logger"
 )
 
+var configFile string
+
+func init() {
+	flag.StringVar(&configFile, "config", "/etc/imagepreviewer/config.json", "Path to configuration file")
+}
+
 func main() {
-	lggr, err := logger.New()
+	flag.Parse()
+
+	cfg, err := config.New(configFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	lggr, err := logger.New(cfg.Logger)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,7 +43,7 @@ func main() {
 	imageSrv := imagesrv.New(ctx)
 	imagepreviewer := app.New(imageSrv)
 
-	httpServer := httpserver.New(imagepreviewer, lggr)
+	httpServer := httpserver.New(cfg.Server, imagepreviewer, lggr)
 	go func() {
 		err := httpServer.Start()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {

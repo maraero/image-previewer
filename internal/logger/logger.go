@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 
+	"github.com/maraero/image-previewer/internal/config"
 	"go.uber.org/zap"
 )
 
@@ -18,8 +19,8 @@ type Logger interface {
 	Fatal(args ...interface{})
 }
 
-func New() (Logger, error) {
-	cfg, err := buildZapConfig()
+func New(loggerConfig config.Logger) (Logger, error) {
+	cfg, err := buildZapConfig(loggerConfig)
 	if err != nil {
 		return nil, err
 	}

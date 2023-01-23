@@ -1,0 +1,11 @@
+{
+  "logger": {
+    "level": "info",
+    "outputPaths": ["./logs/log.log", "stdout"],
+    "errorOutputPaths": ["./logs/log.log", "stderr"]
+  },
+  "server": {
+    "host": "localhost",
+    "port": "4000"
+  }
+}

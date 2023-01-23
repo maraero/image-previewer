@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"time"
 
 	"github.com/maraero/image-previewer/internal/app"
+	"github.com/maraero/image-previewer/internal/config"
 	"github.com/maraero/image-previewer/internal/logger"
 )
 
@@ -19,9 +21,9 @@ type Server struct {
 	srv    *http.Server
 }
 
-func New(app *app.App, l logger.Logger) *Server {
+func New(cfg config.Server, app *app.App, l logger.Logger) *Server {
 	s := &Server{
-		addr:   Addr,
+		addr:   net.JoinHostPort(cfg.Host, cfg.Port),
 		app:    app,
 		logger: l,
 		mux:    http.NewServeMux(),

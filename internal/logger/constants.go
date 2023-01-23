@@ -2,15 +2,7 @@ package logger
 
 import "go.uber.org/zap/zapcore"
 
-const (
-	Level    = "info"
-	Encoding = "json"
-)
-
-var (
-	OutputPaths      = []string{"./logs/log.log", "stdout"}
-	ErrorOutputPaths = []string{"./logs/log.log", "stderr"}
-)
+const Encoding = "json"
 
 var EncoderConfig = zapcore.EncoderConfig{
 	MessageKey:  "message",
