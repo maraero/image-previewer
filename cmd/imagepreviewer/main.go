@@ -27,6 +27,11 @@ func init() {
 func main() {
 	flag.Parse()
 
+	if flag.Arg(0) == "version" {
+		printVersion()
+		return
+	}
+
 	cfg, err := config.New(configFile)
 	if err != nil {
 		log.Fatal(err)
