@@ -1,21 +1,18 @@
 package imagesrv
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestExtractParams(t *testing.T) {
-	rs := New(context.Background())
-
 	t.Run("too few params", func(t *testing.T) {
 		tests := []string{"", "200", "200/300"}
 		for _, tc := range tests {
 			tc := tc
 			t.Run(tc, func(t *testing.T) {
-				_, err := rs.ExtractParams("")
+				_, err := extractParams(tc)
 				require.Error(t, err)
 				require.ErrorIs(t, err, ErrTooFewParams)
 			})
@@ -26,7 +23,7 @@ func TestExtractParams(t *testing.T) {
 	testURL := "http://raw.githubusercontent.com/OtusGolang/final_project/master/examples/image-previewer/_gopher_original_1024x504.jpg"
 
 	t.Run("valid params", func(t *testing.T) {
-		ip, err := rs.ExtractParams("300/200/" + testURL)
+		ip, err := extractParams("300/200/" + testURL)
 		require.NoError(t, err)
 		require.Equal(t, &ImageParams{Width: 300, Height: 200, URL: testURL}, ip)
 	})
@@ -44,7 +41,7 @@ func TestExtractParams(t *testing.T) {
 		for _, tc := range tests {
 			tc := tc
 			t.Run(tc.input, func(t *testing.T) {
-				_, err := rs.ExtractParams(tc.input)
+				_, err := extractParams(tc.input)
 				require.Error(t, err)
 				require.ErrorContains(t, err, tc.expectedError)
 			})
@@ -64,7 +61,7 @@ func TestExtractParams(t *testing.T) {
 		for _, tc := range tests {
 			tc := tc
 			t.Run(tc.input, func(t *testing.T) {
-				_, err := rs.ExtractParams(tc.input)
+				_, err := extractParams(tc.input)
 				require.Error(t, err)
 				require.ErrorContains(t, err, tc.expectedError)
 			})
@@ -84,7 +81,7 @@ func TestExtractParams(t *testing.T) {
 		for _, tc := range tests {
 			tc := tc
 			t.Run(tc.input, func(t *testing.T) {
-				result, err := rs.ExtractParams("200/100/" + tc.input)
+				result, err := extractParams("200/100/" + tc.input)
 				require.NoError(t, err)
 				require.Equal(t, tc.expected, result.URL)
 			})

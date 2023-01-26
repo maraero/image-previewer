@@ -7,16 +7,20 @@ import (
 	"strings"
 )
 
-func (is *ImageSrv) extractParams(path string) (*ImageParams, error) {
+func extractParams(path string) (*ImageParams, error) {
 	p := strings.Split(path, "/")
 	if len(p) < 3 {
 		return nil, ErrTooFewParams
 	}
 	width := p[0]
 	height := p[1]
-	url := strings.Join(p[2:], "/")
-
+	url := getURLFromPath(path, width, height)
 	return validateParams(width, height, url)
+}
+
+func getURLFromPath(path string, width string, height string) string {
+	lpad := len(width) + len(height) + 2
+	return path[lpad:]
 }
 
 func (is *ImageSrv) downloadFile(url string) ([]byte, error) {
