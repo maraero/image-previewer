@@ -22,7 +22,7 @@ func (is *ImageSrv) ExtractParams(path string) (*ImageParams, error) {
 	return is.extractParams(path)
 }
 
-func (is *ImageSrv) DownloadImage(url string) (*image.Image, error) {
+func (is *ImageSrv) GetImg(url string) (*image.Image, error) {
 	file, err := is.downloadFile(url)
 	if err != nil {
 		return nil, err

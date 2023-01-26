@@ -21,7 +21,7 @@ func handleFill(app *app.App, l logger.Logger) http.HandlerFunc {
 			return
 		}
 
-		image, err := app.ImageSrv.DownloadImage(ip.URL)
+		image, err := app.ImageSrv.GetImg(ip.URL)
 		if err != nil {
 			w.WriteHeader(http.StatusBadGateway)
 			if _, err := w.Write([]byte(err.Error())); err != nil {
@@ -29,8 +29,9 @@ func handleFill(app *app.App, l logger.Logger) http.HandlerFunc {
 			}
 			return
 		}
+		resizedImage := app.ImageSrv.ResizeImage(image, ip.Width, ip.Height)
 
-		imageBytes, err := app.ImageSrv.EncodeImageToBytes(image)
+		imageBytes, err := app.ImageSrv.EncodeImageToBytes(&resizedImage)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
