@@ -3,12 +3,8 @@ package imagesrv
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"image"
-	"image/jpeg"
 	"net/http"
-
-	"github.com/disintegration/imaging"
 )
 
 func New(cancelContext context.Context) *ImageSrv {
@@ -32,17 +28,4 @@ func (is *ImageSrv) GetImg(url string) (*image.Image, error) {
 		return nil, err
 	}
 	return &img, err
-}
-
-func (is *ImageSrv) EncodeImageToBytes(img *image.Image) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	err := jpeg.Encode(buf, *img, nil)
-	if err != nil {
-		return []byte{}, fmt.Errorf("can not encode image: %w", err)
-	}
-	return buf.Bytes(), nil
-}
-
-func (is *ImageSrv) ResizeImage(img *image.Image, width, height int) image.Image {
-	return imaging.Thumbnail(*img, width, height, imaging.Lanczos)
 }
