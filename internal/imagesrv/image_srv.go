@@ -10,23 +10,27 @@ import (
 	"net/http"
 
 	"github.com/disintegration/imaging"
+	"github.com/maraero/image-previewer/internal/logger"
 )
 
-func New(cancelContext context.Context) *ImageSrv {
+func New(cancelContext context.Context, logger logger.Logger) *ImageSrv {
 	return &ImageSrv{
 		cancelContext: cancelContext,
 		httpClient:    http.DefaultClient,
+		logger:        logger,
 	}
 }
 
 func (is *ImageSrv) GetResizedImg(params string) ([]byte, error) {
 	imgParams, err := extractParams(params)
 	if err != nil {
+		is.logger.Error(err)
 		return nil, err
 	}
 
 	img, err := is.getImg(imgParams.URL)
 	if err != nil {
+		is.logger.Error(err)
 		return nil, err
 	}
 
@@ -34,6 +38,7 @@ func (is *ImageSrv) GetResizedImg(params string) ([]byte, error) {
 
 	imgBytes, err := is.encodeImageToBytes(&rszdImg)
 	if err != nil {
+		is.logger.Error(err)
 		return nil, ErrEncodingToBytes
 	}
 
@@ -43,11 +48,13 @@ func (is *ImageSrv) GetResizedImg(params string) ([]byte, error) {
 func (is *ImageSrv) getImg(url string) (*image.Image, error) {
 	file, err := is.downloadFile(url)
 	if err != nil {
+		is.logger.Error(err)
 		return nil, ErrFileDownload
 	}
 
 	img, _, err := image.Decode(bytes.NewReader(file))
 	if err != nil {
+		is.logger.Error(err)
 		return nil, ErrFileIsNotJpeg
 	}
 
