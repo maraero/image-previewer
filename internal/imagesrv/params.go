@@ -18,7 +18,7 @@ func extractParams(path string) (*ImageParams, error) {
 
 func getURLFromPath(path string, width string, height string) string {
 	lpad := len(width) + len(height) + 2
-	return path[lpad:]
+	return addSchemaToURLIfRequired(path[lpad:])
 }
 
 func validateParams(width, height, url string) (*ImageParams, error) {
@@ -30,7 +30,7 @@ func validateParams(width, height, url string) (*ImageParams, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ImageParams{Width: w, Height: h, URL: addSchemaToURLIfRequired(url)}, nil
+	return &ImageParams{Width: w, Height: h, URL: url}, nil
 }
 
 func validateSize(size string, t string) (int, error) {
@@ -48,5 +48,14 @@ func addSchemaToURLIfRequired(url string) string {
 	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
 		return url
 	}
+
+	if strings.HasPrefix(url, "http:/") {
+		return "http://" + url[len("http:/"):]
+	}
+
+	if strings.HasPrefix(url, "https:/") {
+		return "http://" + url[len("https:/"):]
+	}
+
 	return "http://" + url
 }
