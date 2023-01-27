@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image"
 	"image/jpeg"
+	"io"
 	"net/http"
 
 	"github.com/disintegration/imaging"
@@ -18,23 +19,42 @@ func New(cancelContext context.Context) *ImageSrv {
 	}
 }
 
-func (is *ImageSrv) ExtractParams(path string) (*ImageParams, error) {
-	return extractParams(path)
+func (is *ImageSrv) GetResizedImg(params string) ([]byte, error) {
+	imgParams, err := extractParams(params)
+	if err != nil {
+		return nil, err
+	}
+
+	img, err := is.getImg(imgParams.URL)
+	if err != nil {
+		return nil, err
+	}
+
+	rszdImg := is.resizeImage(img, imgParams.Width, imgParams.Height)
+
+	imgBytes, err := is.encodeImageToBytes(&rszdImg)
+	if err != nil {
+		return nil, ErrEncodingToBytes
+	}
+
+	return imgBytes, nil
 }
 
-func (is *ImageSrv) GetImg(url string) (*image.Image, error) {
+func (is *ImageSrv) getImg(url string) (*image.Image, error) {
 	file, err := is.downloadFile(url)
 	if err != nil {
-		return nil, err
+		return nil, ErrFileDownload
 	}
+
 	img, _, err := image.Decode(bytes.NewReader(file))
 	if err != nil {
-		return nil, err
+		return nil, ErrFileIsNotJpeg
 	}
-	return &img, err
+
+	return &img, nil
 }
 
-func (is *ImageSrv) EncodeImageToBytes(img *image.Image) ([]byte, error) {
+func (is *ImageSrv) encodeImageToBytes(img *image.Image) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := jpeg.Encode(buf, *img, nil)
 	if err != nil {
@@ -43,6 +63,27 @@ func (is *ImageSrv) EncodeImageToBytes(img *image.Image) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (is *ImageSrv) ResizeImage(img *image.Image, width, height int) image.Image {
+func (is *ImageSrv) resizeImage(img *image.Image, width, height int) image.Image {
 	return imaging.Thumbnail(*img, width, height, imaging.Lanczos)
+}
+
+func (is *ImageSrv) downloadFile(url string) ([]byte, error) {
+	req, err := http.NewRequestWithContext(is.cancelContext, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("can not make request")
+	}
+	resp, err := is.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("can not download file from %s", url)
+	}
+	image, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return image, nil
 }

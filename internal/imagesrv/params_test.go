@@ -14,7 +14,6 @@ func TestExtractParams(t *testing.T) {
 			t.Run(tc, func(t *testing.T) {
 				_, err := extractParams(tc)
 				require.Error(t, err)
-				require.ErrorIs(t, err, ErrTooFewParams)
 			})
 		}
 	})

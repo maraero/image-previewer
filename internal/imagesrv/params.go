@@ -1,10 +1,25 @@
 package imagesrv
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
+
+func extractParams(path string) (*ImageParams, error) {
+	p := strings.Split(path, "/")
+	if len(p) < 3 {
+		return nil, &ParamValidationError{desc: ErrorTooFewParams}
+	}
+	width := p[0]
+	height := p[1]
+	url := getURLFromPath(path, width, height)
+	return validateParams(width, height, url)
+}
+
+func getURLFromPath(path string, width string, height string) string {
+	lpad := len(width) + len(height) + 2
+	return path[lpad:]
+}
 
 func validateParams(width, height, url string) (*ImageParams, error) {
 	w, err := validateSize(width, "width")
@@ -21,10 +36,10 @@ func validateParams(width, height, url string) (*ImageParams, error) {
 func validateSize(size string, t string) (int, error) {
 	w, err := strconv.Atoi(size)
 	if err != nil {
-		return 0, fmt.Errorf("%s must be int", t)
+		return 0, &ParamValidationError{desc: t + " must be int"}
 	}
 	if w <= 0 {
-		return 0, fmt.Errorf("%s must be greater than zero", t)
+		return 0, &ParamValidationError{desc: t + " must be greater than zero"}
 	}
 	return w, nil
 }
