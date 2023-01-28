@@ -19,7 +19,7 @@ func handleFill(app *app.App, l logger.Logger) http.HandlerFunc {
 		image, err := app.ImageSrv.GetResizedImg(params)
 		var paramValidationError *imagesrv.ParamValidationError
 
-		if err != nil && (errors.As(err, &paramValidationError) || errors.Is(err, imagesrv.ErrFileIsNotJpeg)) {
+		if err != nil && (errors.As(err, &paramValidationError) || errors.Is(err, imagesrv.ErrFileIsNotJPEG)) {
 			w.WriteHeader(http.StatusBadRequest)
 			if _, err := w.Write([]byte(err.Error())); err != nil {
 				l.Error("http write error: %w", err)

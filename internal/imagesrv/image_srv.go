@@ -55,13 +55,13 @@ func (is *ImageSrv) getImg(url string) (*image.Image, error) {
 	jpeg := is.isFileJPEG(file[0:3])
 	if !jpeg {
 		is.logger.Error("%s is not jpeg", url)
-		return nil, ErrFileIsNotJpeg
+		return nil, ErrFileIsNotJPEG
 	}
 
 	img, _, err := image.Decode(bytes.NewReader(file))
 	if err != nil {
 		is.logger.Error(err)
-		return nil, ErrFileIsNotJpeg
+		return nil, ErrCanNotDecodeJPEG
 	}
 
 	return &img, nil
