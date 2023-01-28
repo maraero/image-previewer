@@ -7,6 +7,10 @@ import (
 	"github.com/maraero/image-previewer/internal/logger"
 )
 
+type ImageService interface {
+	GetResizedImg(params string) ([]byte, error)
+}
+
 type ImageSrv struct {
 	cancelContext context.Context
 	httpClient    *http.Client
