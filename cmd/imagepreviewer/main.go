@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/maraero/image-previewer/internal/app"
+	"github.com/maraero/image-previewer/internal/cache"
 	"github.com/maraero/image-previewer/internal/config"
 	"github.com/maraero/image-previewer/internal/httpserver"
 	"github.com/maraero/image-previewer/internal/imagesrv"
@@ -45,7 +46,8 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
-	imageSrv := imagesrv.New(ctx, lggr)
+	imageCache := cache.New(10) // TODO: Replace with config
+	imageSrv := imagesrv.New(ctx, imageCache, lggr)
 	imagepreviewer := app.New(imageSrv)
 
 	httpServer := httpserver.New(cfg.Server, imagepreviewer, lggr)

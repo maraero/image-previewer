@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/maraero/image-previewer/internal/cache"
 	"github.com/maraero/image-previewer/internal/logger"
 )
 
@@ -12,6 +13,7 @@ type ImageService interface {
 }
 
 type ImageSrv struct {
+	cache         cache.Cache
 	cancelContext context.Context
 	httpClient    *http.Client
 	logger        logger.Logger

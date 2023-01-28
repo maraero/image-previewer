@@ -10,11 +10,13 @@ import (
 	"net/http"
 
 	"github.com/disintegration/imaging"
+	"github.com/maraero/image-previewer/internal/cache"
 	"github.com/maraero/image-previewer/internal/logger"
 )
 
-func New(cancelContext context.Context, logger logger.Logger) *ImageSrv {
+func New(cancelContext context.Context, cache cache.Cache, logger logger.Logger) *ImageSrv {
 	return &ImageSrv{
+		cache:         cache,
 		cancelContext: cancelContext,
 		httpClient:    http.DefaultClient,
 		logger:        logger,
@@ -22,6 +24,13 @@ func New(cancelContext context.Context, logger logger.Logger) *ImageSrv {
 }
 
 func (is *ImageSrv) GetResizedImg(params string) ([]byte, error) {
+	cacheKey := getCacheKey(params)
+	cachedImg, exists := is.cache.Get(cacheKey)
+	if exists {
+		is.logger.Info("get image from cache by key %s", cacheKey)
+		return cachedImg.([]byte), nil
+	}
+
 	imgParams, err := extractParams(params)
 	if err != nil {
 		is.logger.Error(err)
@@ -40,6 +49,12 @@ func (is *ImageSrv) GetResizedImg(params string) ([]byte, error) {
 	if err != nil {
 		is.logger.Error(err)
 		return nil, ErrEncodingToBytes
+	}
+
+	err = is.cache.Set(cacheKey, imgBytes)
+	if err != nil {
+		is.logger.Error("%s: %w", ErrCacheSet, err)
+		return nil, ErrCacheSet
 	}
 
 	return imgBytes, nil

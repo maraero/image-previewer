@@ -11,6 +11,7 @@ func (e *ParamValidationError) Error() string {
 }
 
 var (
+	ErrCacheSet               = errors.New("can not save image to cache")
 	ErrCanNotBuildRequest     = errors.New("can not build request")
 	ErrCanNotDecodeJPEG       = errors.New("can not decode jpeg")
 	ErrCanNotDownloadFile     = errors.New("can not download file")
