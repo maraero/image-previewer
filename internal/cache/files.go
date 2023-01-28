@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -9,12 +8,11 @@ import (
 
 const cacheDir = "cache"
 
-func createCacheDirIfItDoesNotExist() {
-	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir(cacheDir, os.ModePerm)
-		if err != nil {
-			log.Fatal("can not create cache directory", err)
-		}
+func prepareCacheDir() {
+	os.RemoveAll(cacheDir)
+	err := os.Mkdir(cacheDir, os.ModePerm)
+	if err != nil {
+		log.Fatal("can not create cache directory", err)
 	}
 }
 

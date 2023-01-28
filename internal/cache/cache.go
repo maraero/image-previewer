@@ -18,7 +18,7 @@ type cacheItem struct {
 }
 
 func New(capacity int) Cache {
-	createCacheDirIfItDoesNotExist()
+	prepareCacheDir()
 	return &lruCache{
 		capacity: capacity,
 		queue:    newList(),
