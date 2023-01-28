@@ -1,6 +1,7 @@
 package imagesrv
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -36,10 +37,10 @@ func validateParams(width, height, url string) (*ImageParams, error) {
 func validateSize(size string, t string) (int, error) {
 	w, err := strconv.Atoi(size)
 	if err != nil {
-		return 0, &ParamValidationError{desc: t + " must be int"}
+		return 0, &ParamValidationError{desc: fmt.Sprintf("%s must be int", t)}
 	}
 	if w <= 0 {
-		return 0, &ParamValidationError{desc: t + " must be greater than zero"}
+		return 0, &ParamValidationError{desc: fmt.Sprintf("%s must be greater than zero", t)}
 	}
 	return w, nil
 }
@@ -54,7 +55,7 @@ func addSchemaToURLIfRequired(url string) string {
 	}
 
 	if strings.HasPrefix(url, "https:/") {
-		return "http://" + url[len("https:/"):]
+		return "https://" + url[len("https:/"):]
 	}
 
 	return "http://" + url

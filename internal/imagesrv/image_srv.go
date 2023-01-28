@@ -48,19 +48,16 @@ func (is *ImageSrv) GetResizedImg(params string) ([]byte, error) {
 func (is *ImageSrv) getImg(url string) (*image.Image, error) {
 	file, err := is.downloadFile(url)
 	if err != nil {
-		is.logger.Error(err)
-		return nil, ErrFileDownload
+		return nil, err
 	}
 
 	jpeg := is.isFileJPEG(file[0:3])
 	if !jpeg {
-		is.logger.Error("%s is not jpeg", url)
-		return nil, ErrFileIsNotJPEG
+		return nil, fmt.Errorf("%s %w", url, ErrFileIsNotJPEG)
 	}
 
 	img, _, err := image.Decode(bytes.NewReader(file))
 	if err != nil {
-		is.logger.Error(err)
 		return nil, ErrCanNotDecodeJPEG
 	}
 
@@ -71,7 +68,7 @@ func (is *ImageSrv) encodeImageToBytes(img *image.Image) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := jpeg.Encode(buf, *img, nil)
 	if err != nil {
-		return []byte{}, fmt.Errorf("can not encode image: %w", err)
+		return []byte{}, ErrEncodingToBytes
 	}
 	return buf.Bytes(), nil
 }
@@ -83,22 +80,24 @@ func (is *ImageSrv) resizeImage(img *image.Image, width, height int) image.Image
 func (is *ImageSrv) downloadFile(url string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(is.cancelContext, http.MethodGet, url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("can not make request")
+		return nil, fmt.Errorf("%w: %w", ErrCanNotBuildRequest, err)
 	}
+
 	resp, err := is.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrCanNotMakeRequest, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("can not download file from %s", url)
+		return nil, fmt.Errorf("%w from %s", ErrCanNotDownloadFile, url)
 	}
 
 	image, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrCanNotReadResponseBody, err)
 	}
+
 	return image, nil
 }
 

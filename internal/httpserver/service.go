@@ -19,6 +19,7 @@ func handleFill(app *app.App, l logger.Logger) http.HandlerFunc {
 		image, err := app.ImageSrv.GetResizedImg(params)
 		var paramValidationError *imagesrv.ParamValidationError
 
+		// Bad Request
 		if err != nil && (errors.As(err, &paramValidationError) || errors.Is(err, imagesrv.ErrFileIsNotJPEG)) {
 			w.WriteHeader(http.StatusBadRequest)
 			if _, err := w.Write([]byte(err.Error())); err != nil {
@@ -27,7 +28,8 @@ func handleFill(app *app.App, l logger.Logger) http.HandlerFunc {
 			return
 		}
 
-		if err != nil && errors.Is(err, imagesrv.ErrFileDownload) {
+		// Bad Gateway
+		if err != nil && errors.Is(err, imagesrv.ErrCanNotDownloadFile) {
 			w.WriteHeader(http.StatusBadGateway)
 			if _, err := w.Write([]byte(err.Error())); err != nil {
 				l.Error("http write error: %w", err)
@@ -35,7 +37,8 @@ func handleFill(app *app.App, l logger.Logger) http.HandlerFunc {
 			return
 		}
 
-		if err != nil && errors.Is(err, imagesrv.ErrEncodingToBytes) {
+		// Internal Server Error
+		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
