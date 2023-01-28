@@ -52,6 +52,12 @@ func (is *ImageSrv) getImg(url string) (*image.Image, error) {
 		return nil, ErrFileDownload
 	}
 
+	jpeg := is.isFileJPEG(file[0:3])
+	if !jpeg {
+		is.logger.Error("%s is not jpeg", url)
+		return nil, ErrFileIsNotJpeg
+	}
+
 	img, _, err := image.Decode(bytes.NewReader(file))
 	if err != nil {
 		is.logger.Error(err)
@@ -88,9 +94,19 @@ func (is *ImageSrv) downloadFile(url string) ([]byte, error) {
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("can not download file from %s", url)
 	}
+
 	image, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 	return image, nil
+}
+
+func (is *ImageSrv) isFileJPEG(firstFileBytes []byte) bool {
+	for i, bt := range firstFileBytes {
+		if bt != JPEGMagicNumber[i] {
+			return false
+		}
+	}
+	return true
 }
