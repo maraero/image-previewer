@@ -80,12 +80,12 @@ func (is *ImageSrv) resizeImage(img *image.Image, width, height int) image.Image
 func (is *ImageSrv) downloadFile(url string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(is.cancelContext, http.MethodGet, url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrCanNotBuildRequest, err)
+		return nil, fmt.Errorf("%w: %s", ErrCanNotBuildRequest, err)
 	}
 
 	resp, err := is.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrCanNotMakeRequest, err)
+		return nil, fmt.Errorf("%w: %s", ErrCanNotMakeRequest, err)
 	}
 	defer resp.Body.Close()
 
@@ -95,7 +95,7 @@ func (is *ImageSrv) downloadFile(url string) ([]byte, error) {
 
 	image, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrCanNotReadResponseBody, err)
+		return nil, fmt.Errorf("%w: %s", ErrCanNotReadResponseBody, err)
 	}
 
 	return image, nil
@@ -108,4 +108,8 @@ func (is *ImageSrv) isFileJPEG(firstFileBytes []byte) bool {
 		}
 	}
 	return true
+}
+
+func getCacheKey(params string) string {
+	return cacheKeyRegexp.ReplaceAllString(params, "_")
 }
