@@ -33,7 +33,7 @@ func (c *lruCache) addItem(key string, value []byte) error {
 		return err
 	}
 
-	c.used = c.used + len(value)
+	c.used += len(value)
 	item := cacheItem{key: key}
 	listItemPtr := c.queue.pushFront(item)
 	c.items[key] = listItemPtr
