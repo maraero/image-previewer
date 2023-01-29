@@ -1,5 +1,15 @@
 package cache
 
+import (
+	"errors"
+	"fmt"
+	"log"
+	"strconv"
+	"strings"
+
+	"github.com/maraero/image-previewer/internal/config"
+)
+
 type Cache interface {
 	Set(key string, value []byte) error
 	Get(key string) ([]byte, bool)
@@ -16,8 +26,14 @@ type cacheItem struct {
 	key string
 }
 
-func New(capacity int) Cache {
+func New(cfg config.Cache) Cache {
+	capacity, err := readConfig(cfg)
+	if err != nil {
+		log.Fatal("can not configure cache", err)
+	}
+
 	prepareCacheDir()
+
 	return &lruCache{
 		capacity: capacity,
 		used:     0,
@@ -62,6 +78,7 @@ func (c *lruCache) Set(key string, value []byte) error {
 	if err := c.addItem(key, value); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -98,4 +115,26 @@ func (c *lruCache) deleteLRUValue(requiredCapacity int) error {
 	}
 
 	return nil
+}
+
+func readConfig(cfg config.Cache) (capacity int, err error) {
+	parts := strings.Split(cfg.Capacity, " ")
+	if len(parts) < 1 || len(parts) > 2 {
+		return 0, errors.New("wrong capacity format")
+	}
+
+	capacity, err = strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, fmt.Errorf("can not convert part of config to int: %w", err)
+	}
+
+	if len(parts) == 2 {
+		mult, ok := units[parts[1]]
+		if !ok {
+			return 0, fmt.Errorf("unknown unit: %s", parts[1])
+		}
+		capacity *= mult
+	}
+
+	return capacity, nil
 }
