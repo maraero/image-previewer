@@ -9,6 +9,7 @@ type Cache interface {
 
 type lruCache struct {
 	capacity int
+	used     int
 	queue    List
 	items    map[string]*listItem
 }
@@ -21,6 +22,7 @@ func New(capacity int) Cache {
 	prepareCacheDir()
 	return &lruCache{
 		capacity: capacity,
+		used:     0,
 		queue:    newList(),
 		items:    make(map[string]*listItem, capacity),
 	}
