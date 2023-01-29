@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"errors"
 	"log"
 )
 
@@ -55,7 +54,7 @@ func (c *lruCache) Set(key string, value []byte) error {
 	requiredCapacity := len(value)
 
 	if requiredCapacity > c.capacity {
-		return errors.New("file size exceeds the cache capacity")
+		return ErrFileSizeExceedsCapacity
 	}
 
 	if c.used+requiredCapacity > c.capacity {
@@ -72,13 +71,12 @@ func (c *lruCache) Set(key string, value []byte) error {
 
 func (c *lruCache) Get(key string) ([]byte, bool) {
 	if item, ok := c.items[key]; ok {
-		c.queue.moveToFront(item)
-
 		if _, ok := item.Value.(cacheItem); ok {
 			file, err := readFile(key)
 			if err != nil {
-				log.Fatal("can not read file")
+				log.Fatal("can not read file by key", key, ": ", err)
 			}
+			c.queue.moveToFront(item)
 			return file, true
 		}
 	}
