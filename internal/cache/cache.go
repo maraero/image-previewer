@@ -29,7 +29,7 @@ type cacheItem struct {
 func New(cfg config.Cache) Cache {
 	capacity, err := readConfig(cfg)
 	if err != nil {
-		log.Fatal("can not configure cache", err)
+		log.Fatal("can not configure cache. Use correct format. For example '1024' (in bytes), or '50 mb' (with units)", err)
 	}
 
 	prepareCacheDir()
@@ -98,7 +98,7 @@ func (c *lruCache) Get(key string) ([]byte, bool) {
 }
 
 func (c *lruCache) deleteLRUValue(requiredCapacity int) error {
-	lastItem := c.queue.back()
+	lastItem := c.queue.back() //nolint:ifshort
 
 	if item, ok := lastItem.Value.(cacheItem); ok {
 		filesize, err := deleteFile(item.key)
