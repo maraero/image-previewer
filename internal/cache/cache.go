@@ -1,9 +1,5 @@
 package cache
 
-import (
-	"log"
-)
-
 type Cache interface {
 	Set(key string, value []byte) error
 	Get(key string) ([]byte, bool)
@@ -74,7 +70,7 @@ func (c *lruCache) Get(key string) ([]byte, bool) {
 		if _, ok := item.Value.(cacheItem); ok {
 			file, err := readFile(key)
 			if err != nil {
-				log.Fatal("can not read file by key", key, ": ", err)
+				return []byte{}, false
 			}
 			c.queue.moveToFront(item)
 			return file, true
