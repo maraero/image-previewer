@@ -28,7 +28,7 @@ func (is *ImageSrv) GetResizedImg(params string) ([]byte, error) {
 	cachedImg, exists := is.cache.Get(cacheKey)
 	if exists {
 		is.logger.Info("get image from cache by key %s", cacheKey)
-		return cachedImg.([]byte), nil
+		return cachedImg, nil
 	}
 
 	imgParams, err := extractParams(params)
