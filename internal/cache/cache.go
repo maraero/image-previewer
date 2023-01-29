@@ -3,8 +3,8 @@ package cache
 import "log"
 
 type Cache interface {
-	Set(key string, value any) error
-	Get(key string) (any, bool)
+	Set(key string, value []byte) error
+	Get(key string) ([]byte, bool)
 }
 
 type lruCache struct {
@@ -28,18 +28,19 @@ func New(capacity int) Cache {
 	}
 }
 
-func (c *lruCache) addItem(key string, value any) error {
+func (c *lruCache) addItem(key string, value []byte) error {
 	if err := saveFile(key, value); err != nil {
 		return err
 	}
 
+	c.used = c.used + len(value)
 	item := cacheItem{key: key}
 	listItemPtr := c.queue.pushFront(item)
 	c.items[key] = listItemPtr
 	return nil
 }
 
-func (c *lruCache) Set(key string, value any) error {
+func (c *lruCache) Set(key string, value []byte) error {
 	if item, ok := c.items[key]; ok {
 		if err := c.addItem(key, value); err != nil {
 			return err
@@ -58,7 +59,7 @@ func (c *lruCache) Set(key string, value any) error {
 	return nil
 }
 
-func (c *lruCache) Get(key string) (any, bool) {
+func (c *lruCache) Get(key string) ([]byte, bool) {
 	if item, ok := c.items[key]; ok {
 		c.queue.moveToFront(item)
 

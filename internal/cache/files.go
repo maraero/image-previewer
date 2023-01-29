@@ -20,9 +20,9 @@ func getFilePath(key string) string {
 	return filepath.Join(cacheDir, key)
 }
 
-func saveFile(key string, value any) error {
+func saveFile(key string, value []byte) error {
 	filePath := getFilePath(key)
-	return os.WriteFile(filePath, value.([]byte), 0o644) //nolint:gosec
+	return os.WriteFile(filePath, value, 0o644) //nolint:gosec
 }
 
 func readFile(key string) ([]byte, error) {
