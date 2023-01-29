@@ -47,12 +47,7 @@ func (c *lruCache) Set(key string, value any) error {
 	}
 
 	if c.queue.length() == c.capacity {
-		lastItem := c.queue.back()
-		c.queue.remove(lastItem)
-
-		if item, ok := lastItem.Value.(cacheItem); ok {
-			delete(c.items, item.key)
-		}
+		c.deleteLRUValue()
 	}
 
 	if err := c.addItem(key, value); err != nil {
@@ -75,4 +70,13 @@ func (c *lruCache) Get(key string) (any, bool) {
 	}
 
 	return nil, false
+}
+
+func (c *lruCache) deleteLRUValue() {
+	lastItem := c.queue.back()
+	c.queue.remove(lastItem)
+
+	if item, ok := lastItem.Value.(cacheItem); ok {
+		delete(c.items, item.key)
+	}
 }
