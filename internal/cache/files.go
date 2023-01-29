@@ -29,3 +29,18 @@ func readFile(key string) ([]byte, error) {
 	filePath := getFilePath(key)
 	return os.ReadFile(filePath)
 }
+
+func deleteFile(key string) (filesize int, err error) {
+	filePath := getFilePath(key)
+	fi, err := os.Stat(filePath)
+	if err != nil {
+		return 0, err
+	}
+
+	filesize = int(fi.Size())
+	err = os.Remove(filePath)
+	if err != nil {
+		return 0, err
+	}
+	return filesize, nil
+}

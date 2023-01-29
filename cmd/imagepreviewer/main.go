@@ -46,7 +46,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
-	imageCache := cache.New(10) // TODO: Replace with config
+	imageCache := cache.New(55 * 1024) // TODO: Replace with config
 	imageSrv := imagesrv.New(ctx, imageCache, lggr)
 	imagepreviewer := app.New(imageSrv)
 
