@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/maraero/image-previewer/internal/config"
 )
@@ -19,6 +20,7 @@ type lruCache struct {
 	capacity int
 	used     int
 	queue    List
+	mu       sync.RWMutex
 	items    map[string]*listItem
 }
 
@@ -55,6 +57,8 @@ func (c *lruCache) addItem(key string, value []byte) error {
 }
 
 func (c *lruCache) Set(key string, value []byte) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if item, ok := c.items[key]; ok {
 		if err := c.addItem(key, value); err != nil {
 			return err
@@ -83,6 +87,8 @@ func (c *lruCache) Set(key string, value []byte) error {
 }
 
 func (c *lruCache) Get(key string) ([]byte, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	if item, ok := c.items[key]; ok {
 		if _, ok := item.Value.(cacheItem); ok {
 			file, err := readFile(key)
