@@ -89,7 +89,7 @@ func (is *ImageSrv) encodeImageToBytes(img *image.Image) ([]byte, error) {
 }
 
 func (is *ImageSrv) resizeImage(img *image.Image, width, height int) image.Image {
-	return imaging.Thumbnail(*img, width, height, imaging.Lanczos)
+	return imaging.Fill(*img, width, height, imaging.Center, imaging.Lanczos)
 }
 
 func (is *ImageSrv) downloadFile(url string) ([]byte, error) {
