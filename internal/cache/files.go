@@ -6,18 +6,16 @@ import (
 	"path/filepath"
 )
 
-const cacheDir = "cache"
-
 func prepareCacheDir() {
-	os.RemoveAll(cacheDir)
-	err := os.Mkdir(cacheDir, os.ModePerm)
+	os.RemoveAll(CACHE_DIR)
+	err := os.Mkdir(CACHE_DIR, os.ModePerm)
 	if err != nil {
 		log.Fatal("can not create cache directory", err)
 	}
 }
 
 func getFilePath(key string) string {
-	return filepath.Join(cacheDir, key)
+	return filepath.Join(CACHE_DIR, key)
 }
 
 func saveFile(key string, value []byte) error {

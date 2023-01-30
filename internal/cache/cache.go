@@ -65,7 +65,7 @@ func (c *lruCache) addItem(key string, value []byte) error {
 func (c *lruCache) Set(key string, value []byte) error {
 	c.mu.RLock()
 	item, ok := c.items[key]
-	c.mu.Unlock()
+	c.mu.RUnlock()
 
 	if ok {
 		if err := c.addItem(key, value); err != nil {
