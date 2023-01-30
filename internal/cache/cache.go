@@ -53,32 +53,46 @@ func (c *lruCache) addItem(key string, value []byte) error {
 		return err
 	}
 
+	c.mu.Lock()
 	c.used += len(value)
 	item := cacheItem{key: key}
 	listItemPtr := c.queue.pushFront(item)
 	c.items[key] = listItemPtr
+	c.mu.Unlock()
 	return nil
 }
 
 func (c *lruCache) Set(key string, value []byte) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if item, ok := c.items[key]; ok {
+	c.mu.RLock()
+	item, ok := c.items[key]
+	c.mu.Unlock()
+
+	if ok {
 		if err := c.addItem(key, value); err != nil {
 			return err
 		}
+		c.mu.Lock()
 		c.queue.remove(item)
+		c.mu.Unlock()
 		return nil
 	}
 
 	requiredCapacity := len(value)
 
-	if requiredCapacity > c.capacity {
+	c.mu.Lock()
+	fileTooBig := requiredCapacity > c.capacity
+	c.mu.Unlock()
+
+	if fileTooBig {
 		c.logger.Error("file size exceeds the cache capacity")
 		return ErrFileSizeExceedsCapacity
 	}
 
-	if c.used+requiredCapacity > c.capacity {
+	c.mu.Lock()
+	deleteLRUValue := c.used+requiredCapacity > c.capacity
+	c.mu.Unlock()
+
+	if deleteLRUValue {
 		if err := c.deleteLRUValue(requiredCapacity); err != nil {
 			return err
 		}
@@ -93,17 +107,19 @@ func (c *lruCache) Set(key string, value []byte) error {
 
 func (c *lruCache) Get(key string) ([]byte, bool) {
 	c.mu.RLock()
-	defer c.mu.RUnlock()
-	if item, ok := c.items[key]; ok {
-		if _, ok := item.Value.(cacheItem); ok {
-			file, err := readFile(key)
-			if err != nil {
-				c.logger.Error("can not read file", err)
-				return []byte{}, false
-			}
-			c.queue.moveToFront(item)
-			return file, true
+	item, ok := c.items[key]
+	c.mu.RUnlock()
+
+	if ok {
+		file, err := readFile(key)
+		if err != nil {
+			c.logger.Error("can not read file", err)
+			return []byte{}, false
 		}
+		c.mu.Lock()
+		c.queue.moveToFront(item)
+		c.mu.Unlock()
+		return file, true
 	}
 
 	return []byte{}, false
@@ -112,18 +128,29 @@ func (c *lruCache) Get(key string) ([]byte, bool) {
 func (c *lruCache) deleteLRUValue(requiredCapacity int) error {
 	lastItem := c.queue.back() //nolint:ifshort
 
-	if item, ok := lastItem.Value.(cacheItem); ok {
+	c.mu.Lock()
+	item, ok := lastItem.Value.(cacheItem)
+	c.mu.Unlock()
+
+	if ok {
 		filesize, err := deleteFile(item.key)
 		if err != nil {
 			c.logger.Error("can not delete file", err)
 			return err
 		}
+
+		c.mu.Lock()
 		c.used -= filesize
 		c.queue.remove(lastItem)
 		delete(c.items, item.key)
+		c.mu.Unlock()
 	}
 
-	if c.used+requiredCapacity > c.capacity {
+	c.mu.Lock()
+	repeat := c.used+requiredCapacity > c.capacity
+	c.mu.Unlock()
+
+	if repeat {
 		return c.deleteLRUValue(requiredCapacity)
 	}
 
