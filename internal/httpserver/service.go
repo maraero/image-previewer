@@ -15,8 +15,8 @@ func handleFill(app *app.App, l logger.Logger) http.HandlerFunc {
 		sep := "/fill/"
 		p := strings.Split(r.URL.Path, sep)
 		params := strings.Join(p[1:], sep)
-
-		image, err := app.ImageSrv.GetResizedImg(params)
+		reqHeaders := r.Header.Clone()
+		image, err := app.ImageSrv.GetResizedImg(params, reqHeaders)
 		var paramValidationError *imagesrv.ParamValidationError
 
 		// Bad Request

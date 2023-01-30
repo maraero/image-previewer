@@ -9,7 +9,7 @@ import (
 )
 
 type ImageService interface {
-	GetResizedImg(params string) ([]byte, error)
+	GetResizedImg(params string, reqHeaders http.Header) ([]byte, error)
 }
 
 type ImageSrv struct {

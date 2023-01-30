@@ -23,7 +23,7 @@ func New(cancelContext context.Context, cache cache.Cache, logger logger.Logger)
 	}
 }
 
-func (is *ImageSrv) GetResizedImg(params string) ([]byte, error) {
+func (is *ImageSrv) GetResizedImg(params string, reqHeaders http.Header) ([]byte, error) {
 	cacheKey := getCacheKey(params)
 	cachedImg, exists := is.cache.Get(cacheKey)
 	if exists {
@@ -37,7 +37,7 @@ func (is *ImageSrv) GetResizedImg(params string) ([]byte, error) {
 		return nil, err
 	}
 
-	img, err := is.getImg(imgParams.URL)
+	img, err := is.getImg(imgParams.URL, reqHeaders)
 	if err != nil {
 		is.logger.Error(err)
 		return nil, err
@@ -60,8 +60,8 @@ func (is *ImageSrv) GetResizedImg(params string) ([]byte, error) {
 	return imgBytes, nil
 }
 
-func (is *ImageSrv) getImg(url string) (*image.Image, error) {
-	file, err := is.downloadFile(url)
+func (is *ImageSrv) getImg(url string, reqHeaders http.Header) (*image.Image, error) {
+	file, err := is.downloadFile(url, reqHeaders)
 	if err != nil {
 		return nil, err
 	}
@@ -92,10 +92,14 @@ func (is *ImageSrv) resizeImage(img *image.Image, width, height int) image.Image
 	return imaging.Fill(*img, width, height, imaging.Center, imaging.Lanczos)
 }
 
-func (is *ImageSrv) downloadFile(url string) ([]byte, error) {
+func (is *ImageSrv) downloadFile(url string, headers http.Header) ([]byte, error) {
 	req, err := http.NewRequestWithContext(is.cancelContext, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrCanNotBuildRequest, err)
+	}
+
+	for h := range headers {
+		req.Header.Add(h, headers.Get(h))
 	}
 
 	resp, err := is.httpClient.Do(req)
