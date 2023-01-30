@@ -1,5 +1,5 @@
 logs/
 bin/
-cache/
+files_cache/
 
 .DS_Store

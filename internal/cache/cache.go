@@ -126,7 +126,7 @@ func (c *lruCache) Get(key string) ([]byte, bool) {
 }
 
 func (c *lruCache) deleteLRUValue(requiredCapacity int) error {
-	lastItem := c.queue.back() //nolint:ifshort
+	lastItem := c.queue.back()
 
 	c.mu.Lock()
 	item, ok := lastItem.Value.(cacheItem)
