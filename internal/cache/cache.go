@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/maraero/image-previewer/internal/config"
+	"github.com/maraero/image-previewer/internal/logger"
 )
 
 type Cache interface {
@@ -22,13 +23,14 @@ type lruCache struct {
 	queue    List
 	mu       sync.RWMutex
 	items    map[string]*listItem
+	logger   logger.Logger
 }
 
 type cacheItem struct {
 	key string
 }
 
-func New(cfg config.Cache) Cache {
+func New(cfg config.Cache, logger logger.Logger) Cache {
 	capacity, err := readConfig(cfg)
 	if err != nil {
 		log.Fatal("can not configure cache. Use correct format. For example '1024' (in bytes), or '50 mb' (with units)", err)
@@ -41,11 +43,13 @@ func New(cfg config.Cache) Cache {
 		used:     0,
 		queue:    newList(),
 		items:    make(map[string]*listItem, capacity),
+		logger:   logger,
 	}
 }
 
 func (c *lruCache) addItem(key string, value []byte) error {
 	if err := saveFile(key, value); err != nil {
+		c.logger.Error("can not save file", err)
 		return err
 	}
 
@@ -70,6 +74,7 @@ func (c *lruCache) Set(key string, value []byte) error {
 	requiredCapacity := len(value)
 
 	if requiredCapacity > c.capacity {
+		c.logger.Error("file size exceeds the cache capacity")
 		return ErrFileSizeExceedsCapacity
 	}
 
@@ -93,6 +98,7 @@ func (c *lruCache) Get(key string) ([]byte, bool) {
 		if _, ok := item.Value.(cacheItem); ok {
 			file, err := readFile(key)
 			if err != nil {
+				c.logger.Error("can not read file", err)
 				return []byte{}, false
 			}
 			c.queue.moveToFront(item)
@@ -109,6 +115,7 @@ func (c *lruCache) deleteLRUValue(requiredCapacity int) error {
 	if item, ok := lastItem.Value.(cacheItem); ok {
 		filesize, err := deleteFile(item.key)
 		if err != nil {
+			c.logger.Error("can not delete file", err)
 			return err
 		}
 		c.used -= filesize
