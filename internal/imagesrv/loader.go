@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"image"
-	_ "image/jpeg"
 	"io"
 	"net/http"
+	"strings"
 )
 
 func (is *ImageSrv) downloadJPEG(url string, headers http.Header) (*image.Image, error) {
@@ -29,9 +29,12 @@ func (is *ImageSrv) downloadJPEG(url string, headers http.Header) (*image.Image,
 	}
 
 	respHeaders := resp.Header.Clone()
-	if !is.isJPEG(respHeaders) {
+	if !is.canBeJPEG(respHeaders) {
 		return nil, ErrIsNotJPEG
 	}
+
+	cacheParams := collectCacheParams(respHeaders)
+	fmt.Println(cacheParams) // TODO: Delete
 
 	defer resp.Body.Close()
 	file, err := io.ReadAll(resp.Body)
@@ -52,15 +55,10 @@ func (is *ImageSrv) downloadJPEG(url string, headers http.Header) (*image.Image,
 	return &img, nil
 }
 
-func (is *ImageSrv) isJPEG(respHeaders http.Header) bool {
-	ct, ok := respHeaders["content-type"]
-	if !ok {
+func (is *ImageSrv) canBeJPEG(respHeaders http.Header) bool {
+	ct := respHeaders.Get("content-type")
+	if ct == "" || strings.Contains(ct, "image/jpeg") {
 		return true
-	}
-	for _, v := range ct {
-		if v == "image/jpeg" {
-			return true
-		}
 	}
 	return false
 }
