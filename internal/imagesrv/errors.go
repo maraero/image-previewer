@@ -18,7 +18,7 @@ var (
 	ErrCanNotMakeRequest      = errors.New("can not make request")
 	ErrCanNotReadResponseBody = errors.New("can not read response body")
 	ErrEncodingToBytes        = errors.New("can not encode image to bytes")
-	ErrFileIsNotJPEG          = errors.New("is not jpeg")
+	ErrIsNotJPEG              = errors.New("is not jpeg")
 )
 
 const ErrorTooFewParams = "too few params. Pass width, height and url in format /fill/:width/:height/:url"

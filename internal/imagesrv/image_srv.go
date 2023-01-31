@@ -68,7 +68,7 @@ func (is *ImageSrv) getImg(url string, reqHeaders http.Header) (*image.Image, er
 
 	jpeg := is.isFileJPEG(file[0:3])
 	if !jpeg {
-		return nil, fmt.Errorf("%s %w", url, ErrFileIsNotJPEG)
+		return nil, fmt.Errorf("%s %w", url, ErrIsNotJPEG)
 	}
 
 	img, _, err := image.Decode(bytes.NewReader(file))
@@ -86,6 +86,19 @@ func (is *ImageSrv) encodeImageToBytes(img *image.Image) ([]byte, error) {
 		return []byte{}, ErrEncodingToBytes
 	}
 	return buf.Bytes(), nil
+}
+
+func (is *ImageSrv) isJPEG(respHeaders http.Header) bool {
+	ct, ok := respHeaders["content-type"]
+	if !ok {
+		return true
+	}
+	for _, v := range ct {
+		if v == "image/jpeg" {
+			return true
+		}
+	}
+	return false
 }
 
 func (is *ImageSrv) resizeImage(img *image.Image, width, height int) image.Image {
@@ -106,12 +119,17 @@ func (is *ImageSrv) downloadFile(url string, headers http.Header) ([]byte, error
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrCanNotMakeRequest, err)
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("%w from %s", ErrCanNotDownloadFile, url)
 	}
 
+	respHeaders := resp.Header.Clone()
+	if !is.isJPEG(respHeaders) {
+		return nil, ErrIsNotJPEG
+	}
+
+	defer resp.Body.Close()
 	image, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrCanNotReadResponseBody, err)
