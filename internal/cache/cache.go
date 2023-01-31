@@ -14,7 +14,7 @@ import (
 
 type Cache interface {
 	Set(key string, value []byte) error
-	Get(key string) ([]byte, bool)
+	Get(key string) ([]byte, bool, bool)
 }
 
 type lruCache struct {
@@ -105,7 +105,7 @@ func (c *lruCache) Set(key string, value []byte) error {
 	return nil
 }
 
-func (c *lruCache) Get(key string) ([]byte, bool) {
+func (c *lruCache) Get(key string) (file []byte, exists bool, expired bool) {
 	c.mu.RLock()
 	item, ok := c.items[key]
 	c.mu.RUnlock()
@@ -114,15 +114,15 @@ func (c *lruCache) Get(key string) ([]byte, bool) {
 		file, err := readFile(key)
 		if err != nil {
 			c.logger.Error("can not read file", err)
-			return []byte{}, false
+			return []byte{}, false, false
 		}
 		c.mu.Lock()
 		c.queue.moveToFront(item)
 		c.mu.Unlock()
-		return file, true
+		return file, true, false
 	}
 
-	return []byte{}, false
+	return []byte{}, false, false
 }
 
 func (c *lruCache) deleteLRUValue(requiredCapacity int) error {

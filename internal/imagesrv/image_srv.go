@@ -25,7 +25,7 @@ func New(cancelContext context.Context, cache cache.Cache, logger logger.Logger)
 
 func (is *ImageSrv) GetResizedImg(params string, reqHeaders http.Header) ([]byte, error) {
 	cacheKey := getCacheKey(params)
-	cachedImg, exists := is.cache.Get(cacheKey)
+	cachedImg, exists, _ := is.cache.Get(cacheKey)
 	if exists {
 		is.logger.Info("get image from cache by key ", cacheKey)
 		return cachedImg, nil
