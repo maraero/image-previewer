@@ -84,15 +84,6 @@ func (is *ImageSrv) resizeImage(img *image.Image, width, height int) image.Image
 	return imaging.Fill(*img, width, height, imaging.Center, imaging.Lanczos)
 }
 
-func (is *ImageSrv) isFileJPEG(firstFileBytes []byte) bool {
-	for i, bt := range firstFileBytes {
-		if bt != JPEGMagicNumber[i] {
-			return false
-		}
-	}
-	return true
-}
-
 func getCacheKey(params string) string {
 	return cacheKeyRegexp.ReplaceAllString(params, "_")
 }
