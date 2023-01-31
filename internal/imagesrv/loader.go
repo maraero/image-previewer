@@ -52,6 +52,19 @@ func (is *ImageSrv) downloadJPEG(url string, headers http.Header) (*image.Image,
 	return &img, nil
 }
 
+func (is *ImageSrv) isJPEG(respHeaders http.Header) bool {
+	ct, ok := respHeaders["content-type"]
+	if !ok {
+		return true
+	}
+	for _, v := range ct {
+		if v == "image/jpeg" {
+			return true
+		}
+	}
+	return false
+}
+
 func (is *ImageSrv) isFileJPEG(firstFileBytes []byte) bool {
 	for i, bt := range firstFileBytes {
 		if bt != JPEGMagicNumber[i] {

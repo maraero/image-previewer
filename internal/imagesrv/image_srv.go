@@ -67,19 +67,6 @@ func (is *ImageSrv) encodeImageToBytes(img *image.Image) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (is *ImageSrv) isJPEG(respHeaders http.Header) bool {
-	ct, ok := respHeaders["content-type"]
-	if !ok {
-		return true
-	}
-	for _, v := range ct {
-		if v == "image/jpeg" {
-			return true
-		}
-	}
-	return false
-}
-
 func (is *ImageSrv) resizeImage(img *image.Image, width, height int) image.Image {
 	return imaging.Fill(*img, width, height, imaging.Center, imaging.Lanczos)
 }
